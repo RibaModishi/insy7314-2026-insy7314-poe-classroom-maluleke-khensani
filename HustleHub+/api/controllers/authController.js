@@ -12,12 +12,14 @@ const register = async (req, res) => {
     throw new Error('Name, email and password are required');
   }
 
+  const normalizedEmail = email.toLowerCase();
+
   const assignedRole = role || 'client';
   if (!ALLOWED_ROLES.includes(assignedRole)) {
     throw new Error('Role must be one of: client, freelancer, admin');
   }
 
-  const existing = users.find((user) => user.email === email);
+  const existing = users.find((user) => user.email === normalizedEmail);
   if (existing) {
     throw new Error('Email already registered');
   }
@@ -28,7 +30,7 @@ const register = async (req, res) => {
   const user = {
     id: users.length ? Math.max(...users.map((u) => u.id)) + 1 : 1,
     name,
-    email,
+    email: normalizedEmail,
     passwordHash,
     role: assignedRole
   };
@@ -51,7 +53,8 @@ const login = async (req, res) => {
     throw new Error('Email and password are required');
   }
 
-  const user = users.find((u) => u.email === email);
+  const normalizedEmail = email.toLowerCase();
+  const user = users.find((u) => u.email === normalizedEmail);
   if (!user) {
     throw new Error('Invalid email or password');
   }
