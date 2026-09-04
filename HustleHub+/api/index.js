@@ -19,6 +19,8 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
 });
 
+app.use('/api/auth', require('./routes/authRoutes'));
+
 const PORT = process.env.PORT || 4000;
 const USE_HTTPS = process.env.USE_HTTPS === 'true';
 
