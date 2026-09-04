@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const users = require('../data/users.js');
 
 const ALLOWED_ROLES = ['client', 'freelancer', 'admin'];
@@ -43,4 +44,35 @@ const register = async (req, res) => {
   });
 };
 
-module.exports = { register };
+const login = async (req, res) => {
+  const { email, password } = req.body || {};
+
+  if (!email || !password) {
+    throw new Error('Email and password are required');
+  }
+
+  const user = users.find((u) => u.email === email);
+  if (!user) {
+    throw new Error('Invalid email or password');
+  }
+
+  const match = await bcrypt.compare(password, user.passwordHash);
+  if (!match) {
+    throw new Error('Invalid email or password');
+  }
+
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT secret is not configured');
+  }
+
+  // Payload is only id and role so a stolen token does not expose name/email.
+  const token = jwt.sign(
+    { id: user.id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN }
+  );
+
+  res.status(200).json({ token });
+};
+
+module.exports = { register, login };
