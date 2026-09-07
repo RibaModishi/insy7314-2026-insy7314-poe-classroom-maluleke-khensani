@@ -35,11 +35,61 @@ The API models three roles via the `role` field on a user (see
 Part 1 only implements account creation, login, and profile lookup for these roles;
 gig browsing, bookings, and role-specific permissions on other endpoints are future
 work, not part of this submission.
-## HustleHub Architecture Diagram
+# System Architecture Overview
+
+HustleHub is built using the **MERN** stack (MongoDB, Express.js, React, and Node.js). It uses a client-server setup with a standalone frontend, secure communication pathways, and dedicated database storage.
 
 <img width="1652" height="902" alt="HustleHub Architecture Diagram drawio" src="https://github.com/user-attachments/assets/88503b44-e165-4069-8312-d8ad6aa0dffa" />
 
+---
 
+### System Breakdown
+
+**1. Users**
+The platform serves three main user roles via the frontend application:
+* **Client (Booker):** Registers, browses available gigs, creates bookings, and manages transactions.
+* **Freelancer:** Registers, publishes and manages gig listings, accepts bookings, and checks income/tax estimates via the dashboard.
+* **Administrator:** Manages platform accounts, oversees system activity, and handles admin tasks.
+
+**2. Frontend (Web Application)**
+* **Tech:** React.js
+* **Role:** Serves the browser UI for account registration, login, gig browsing, booking management, and financial dashboard tracking.
+* **Boundary:** Runs entirely on the user's browser, completely separated from backend business logic.
+
+**3. Secure Transport Layer**
+* **Protocol:** HTTPS (SSL/TLS Encryption)
+* **Role:** Encrypts all traffic moving between the React client and Express API to keep data secure against sniffing or Man-in-the-Middle attacks.
+
+**4. Backend API**
+* **Tech:** Node.js & Express.js
+* **Authentication & Authorization:** Uses JWTs for user validation and Role-Based Access Control (RBAC) to restrict endpoints based on role permissions (Client, Freelancer, Admin).
+* **Core Modules (Routes & Controllers):** Handles core features including User Management, Gigs, Bookings, Transactions (simulated payments), Income Tracking/Tax Calculations, and Admin utilities.
+* **Middleware:**
+  * **Input Validation & Sanitization:** Cleans incoming request data to prevent XSS and NoSQL injection vulnerabilities.
+  * **Security Headers (Helmet):** Sets safe standard HTTP response headers to reduce application exposure.
+  * **Rate Limiting:** Restricts repetitive requests to critical endpoints like login to prevent brute-force attacks.
+  * **Error Handling:** Centralized error management that safely catches issues without leaking backend system traces.
+
+**5. Data Storage**
+* **Tech:** MongoDB Atlas (Cloud Database) using Mongoose ODM.
+* **Stored Models:** Users, Gigs, Bookings, Transactions, Income Records, Tax Records, and Audit Logs.
+
+**6. External Services (Optional / Future Integrations)**
+Third-party APIs connected asynchronously:
+* **Email Service (SendGrid):** For automated notification emails.
+* **File Storage (Cloudinary):** For host images and document attachments.
+* **Payment Gateway (Stripe):** For live payment handling in future updates.
+
+---
+
+### Key Security & System Boundaries
+
+* **Data in Transit:** Secured using HTTPS (SSL/TLS) across all API communications.
+* **Authentication:** Handled via JSON Web Tokens (JWT) with passwords securely hashed via bcrypt.
+* **Access Control:** Protected routes using Role-Based Access Control (RBAC) middleware.
+* **Server Defense:** Hardened using Helmet.js headers and rate-limiting rules.
+* **Data Integrity:** Ensured using Mongoose schemas and strict request sanitization.
+* **Architecture Isolation:** Fully decoupled setup keeping the React UI, Node API, and MongoDB Database isolated.
 ## Backend structure
 
 ```
