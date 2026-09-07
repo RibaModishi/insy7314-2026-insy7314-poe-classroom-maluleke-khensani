@@ -322,43 +322,40 @@ Evidence of the endpoints and error handling running end to end, via the Postman
 collection above (Postman, n.d.). Files live in [`screenshots/`](screenshots/).
 
 `GET /health`
-
-![Health check](screenshots/health-check.png)
+<img width="975" height="496" alt="image" src="https://github.com/user-attachments/assets/8bd75f6d-76e0-4158-ae3a-0ed584ee22ae" />
 *Figure 1: Health check endpoint returning `200 OK`, confirming the server is running.*
 
 `POST /api/auth/register` with an incomplete body.
-
-![Register missing fields](screenshots/register-missing-fields.png)
+<img width="1032" height="520" alt="image" src="https://github.com/user-attachments/assets/e372f0ef-38f2-40ae-8b12-01cece1889d0" />
 *Figure 2: Registration rejected with `400 Bad Request` when required fields are missing.*
 
 `POST /api/auth/register` with valid input, returning `201 Created`.
-
-![Register success](screenshots/register-success.png)
+<img width="1010" height="517" alt="image" src="https://github.com/user-attachments/assets/cfc72579-e661-45d4-a29c-8fe805038c22" />
 *Figure 3: Successful registration returning the new user's `id`, `name`, `email`, and `role`.*
 
 `POST /api/auth/register` against an email that's already registered.
+<img width="975" height="512" alt="image" src="https://github.com/user-attachments/assets/6026a390-6437-470c-b189-9d1f5c9e2fa1" />
 
-![Register duplicate email](screenshots/register-duplicate-email.png)
 *Figure 4: Duplicate registration attempt rejected with `400 Bad Request` and a clean error message.*
 
 `POST /api/auth/login` with valid credentials, returning a JWT.
+<img width="906" height="472" alt="image" src="https://github.com/user-attachments/assets/481a28be-7ab1-43f3-8389-c9d16a69c30d" />
 
-![Login success](screenshots/login-success.png)
 *Figure 5: Successful login returning a signed JWT.*
 
 `POST /api/auth/login` with the wrong password.
+<img width="975" height="495" alt="image" src="https://github.com/user-attachments/assets/ae5ebdb6-11c2-4601-b3e0-a00446a1f26f" />
 
-![Login invalid credentials](screenshots/login-invalid-credentials.png)
 *Figure 6: Login rejected with `400 Bad Request` for an incorrect password.*
 
 `GET /api/auth/me` with a valid token, returning the user's profile.
+<img width="975" height="418" alt="image" src="https://github.com/user-attachments/assets/42ef28e5-2ecb-478e-bb1e-a0af4b21b16e" />
 
-![Me with valid token](screenshots/me-valid-token.png)
 *Figure 7: Protected route returning the authenticated user's profile when a valid Bearer token is supplied.*
 
 `GET /api/auth/me` with no `Authorization` header.
+<img width="975" height="412" alt="image" src="https://github.com/user-attachments/assets/239ee397-8660-4fb5-87ac-6c994fc71c40" />
 
-![Me with no token](screenshots/me-no-token.png)
 *Figure 8: Protected route rejected with `400 Bad Request` when no token is provided.*
 
 ## References
