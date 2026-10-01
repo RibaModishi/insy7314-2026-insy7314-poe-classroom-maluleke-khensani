@@ -5,6 +5,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const https = require('https');
 const fs = require('fs');
+const connectDB = require('./config/db');
 
 const app = express();
 
@@ -47,17 +48,21 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 4000;
 const USE_HTTPS = process.env.USE_HTTPS === 'true';
 
-if (USE_HTTPS) {
-  const httpsOptions = {
-    key: fs.readFileSync(process.env.SSL_KEY_PATH),
-    cert: fs.readFileSync(process.env.SSL_CERT_PATH)
-  };
+(async () => {
+  await connectDB();
 
-  https.createServer(httpsOptions, app).listen(PORT, () => {
-    console.log(`HTTPS server running on port ${PORT}`);
-  });
-} else {  
-  app.listen(PORT, () => {
-    console.log(`HTTP server running on port ${PORT}`);
-  });
-}
+  if (USE_HTTPS) {
+    const httpsOptions = {
+      key: fs.readFileSync(process.env.SSL_KEY_PATH),
+      cert: fs.readFileSync(process.env.SSL_CERT_PATH)
+    };
+
+    https.createServer(httpsOptions, app).listen(PORT, () => {
+      console.log(`HTTPS server running on port ${PORT}`);
+    });
+  } else {  
+    app.listen(PORT, () => {
+      console.log(`HTTP server running on port ${PORT}`);
+    });
+  }
+})();
