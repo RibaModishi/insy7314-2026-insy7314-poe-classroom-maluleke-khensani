@@ -5,13 +5,19 @@ const User = require('../models/User');
 
 const SALT_ROUNDS = 10;
 
+// Admin is deliberately absent: admin accounts are seeded directly, never self-registered.
+const SELF_REGISTER_ROLES = ['client', 'freelancer'];
+
 const register = async (req, res) => {
-  // `role` is deliberately not read from the body: public registration only ever
-  // creates clients, so nobody can self-assign freelancer or admin.
-  const { name, email, password } = req.body || {};
+  const { name, email, password, role } = req.body || {};
 
   if (!name || !email || !password) {
     throw new Error('Name, email and password are required');
+  }
+
+  const assignedRole = role || 'client';
+  if (!SELF_REGISTER_ROLES.includes(assignedRole)) {
+    throw new Error('Role must be either client or freelancer');
   }
 
   const normalizedEmail = email.toLowerCase();
@@ -25,7 +31,7 @@ const register = async (req, res) => {
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
   // The unique index still rejects a duplicate if two registrations race past findOne.
-  const user = await User.create({ name, email: normalizedEmail, passwordHash }).catch((err) => {
+  const user = await User.create({ name, email: normalizedEmail, passwordHash, role: assignedRole }).catch((err) => {
     if (err.code === 11000) {
       throw new Error('Email already registered');
     }
