@@ -30,6 +30,16 @@ const loginLimiter = rateLimit({
   handler: limitHandler((limit) => `Too many failed login attempts (limit is ${limit} per 15 minutes).`)
 });
 
+// Per IP, counting every attempt (not just successes), so one machine can't mass-create
+// accounts or use registration to probe which emails are already taken.
+const registerLimiter = rateLimit({
+  windowMs: ONE_HOUR,
+  limit: 10,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  handler: limitHandler((limit) => `Too many registration attempts (limit is ${limit} per hour).`)
+});
+
 // Per logged-in user rather than per IP, so one account can't spam bookings and
 // users sharing a network (e.g. campus Wi-Fi) don't block each other. Must run after verifyToken.
 const bookingLimiter = rateLimit({
@@ -41,4 +51,4 @@ const bookingLimiter = rateLimit({
   handler: limitHandler((limit) => `Too many bookings created (limit is ${limit} per hour).`)
 });
 
-module.exports = { loginLimiter, bookingLimiter };
+module.exports = { loginLimiter, registerLimiter, bookingLimiter };
