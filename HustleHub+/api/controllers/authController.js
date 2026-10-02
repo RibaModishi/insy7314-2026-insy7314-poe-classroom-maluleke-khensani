@@ -1,12 +1,14 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const users = require('../data/users.js');
+const mongoose = require('mongoose');
+const User = require('../models/User');
 
-const ALLOWED_ROLES = ['client', 'freelancer', 'admin'];
 const SALT_ROUNDS = 10;
 
 const register = async (req, res) => {
-  const { name, email, password, role } = req.body || {};
+  // `role` is deliberately not read from the body: public registration only ever
+  // creates clients, so nobody can self-assign freelancer or admin.
+  const { name, email, password } = req.body || {};
 
   if (!name || !email || !password) {
     throw new Error('Name, email and password are required');
@@ -14,12 +16,7 @@ const register = async (req, res) => {
 
   const normalizedEmail = email.toLowerCase();
 
-  const assignedRole = role || 'client';
-  if (!ALLOWED_ROLES.includes(assignedRole)) {
-    throw new Error('Role must be one of: client, freelancer, admin');
-  }
-
-  const existing = users.find((user) => user.email === normalizedEmail);
+  const existing = await User.findOne({ email: normalizedEmail });
   if (existing) {
     throw new Error('Email already registered');
   }
@@ -27,19 +24,17 @@ const register = async (req, res) => {
   // Hash so a dump of the user store cannot reveal plaintext passwords.
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-  const user = {
-    id: users.length ? Math.max(...users.map((u) => u.id)) + 1 : 1,
-    name,
-    email: normalizedEmail,
-    passwordHash,
-    role: assignedRole
-  };
-
-  users.push(user);
+  // The unique index still rejects a duplicate if two registrations race past findOne.
+  const user = await User.create({ name, email: normalizedEmail, passwordHash }).catch((err) => {
+    if (err.code === 11000) {
+      throw new Error('Email already registered');
+    }
+    throw err;
+  });
 
   // Never return passwordHash — the client has no need for the stored hash.
   res.status(201).json({
-    id: user.id,
+    id: user._id.toString(),
     name: user.name,
     email: user.email,
     role: user.role
@@ -54,7 +49,7 @@ const login = async (req, res) => {
   }
 
   const normalizedEmail = email.toLowerCase();
-  const user = users.find((u) => u.email === normalizedEmail);
+  const user = await User.findOne({ email: normalizedEmail });
   if (!user) {
     throw new Error('Invalid email or password');
   }
@@ -70,7 +65,7 @@ const login = async (req, res) => {
 
   // Payload is only id and role so a stolen token does not expose name/email.
   const token = jwt.sign(
-    { id: user.id, role: user.role },
+    { id: user._id.toString(), role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '1h'}
   );
@@ -79,13 +74,15 @@ const login = async (req, res) => {
 };
 
 const getMe = async (req, res) => {
-  const user = users.find((u) => u.id === req.user.id);
+  // Tokens issued before the move to MongoDB carry numeric ids; treat them as unknown
+  // users instead of letting a CastError message reach the client.
+  const user = mongoose.isObjectIdOrHexString(req.user.id) ? await User.findById(req.user.id) : null;
   if (!user) {
     throw new Error('User not found');
   }
 
   res.status(200).json({
-    id: user.id,
+    id: user._id.toString(),
     name: user.name,
     email: user.email,
     role: user.role
