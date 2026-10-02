@@ -19,6 +19,16 @@ function limitHandler(describe) {
   };
 }
 
+// Baseline for every /api route, per IP: generous enough for normal use, but stops a single
+// machine from flooding the API. The stricter limiters below stack on top of this one.
+const apiLimiter = rateLimit({
+  windowMs: FIFTEEN_MINUTES,
+  limit: 100,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  handler: limitHandler((limit) => `Too many requests (limit is ${limit} per 15 minutes).`)
+});
+
 // Per IP, and only failed attempts count, so password guessing is capped without
 // locking out someone who simply logs in successfully several times.
 const loginLimiter = rateLimit({
@@ -51,4 +61,4 @@ const bookingLimiter = rateLimit({
   handler: limitHandler((limit) => `Too many bookings created (limit is ${limit} per hour).`)
 });
 
-module.exports = { loginLimiter, registerLimiter, bookingLimiter };
+module.exports = { apiLimiter, loginLimiter, registerLimiter, bookingLimiter };
