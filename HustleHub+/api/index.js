@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const https = require('https');
 const fs = require('fs');
 const connectDB = require('./config/db');
+const { apiLimiter } = require('./middleware/rateLimiters');
 
 const app = express();
 
@@ -44,6 +45,9 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization']
   })
 );
+
+// Before body parsing, so a flood of requests is rejected without reading their bodies.
+app.use('/api', apiLimiter);
 
 app.use(express.json());
 
