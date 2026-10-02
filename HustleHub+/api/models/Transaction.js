@@ -23,10 +23,10 @@ const transactionSchema = new mongoose.Schema(
       required: true,
       min: 0
     },
-    // Enum now so refunds or payouts can be added later without a schema rewrite.
+    // Cancellations add a refund instead of editing the payment, so the money trail stays complete.
     type: {
       type: String,
-      enum: ['payment'],
+      enum: ['payment', 'refund'],
       default: 'payment'
     }
   },
