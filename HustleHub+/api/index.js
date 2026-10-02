@@ -80,6 +80,15 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 4000;
 const USE_HTTPS = process.env.USE_HTTPS === 'true';
 
+// Checked up front so a missing secret stops the server at startup, instead of
+// surfacing later as a failed login or an unsigned token.
+const REQUIRED_ENV = ['MONGO_URI', 'JWT_SECRET', ...(USE_HTTPS ? ['SSL_KEY_PATH', 'SSL_CERT_PATH'] : [])];
+const missingEnv = REQUIRED_ENV.filter((key) => !process.env[key]);
+if (missingEnv.length > 0) {
+  console.error(`Missing required environment variables: ${missingEnv.join(', ')}. Copy .env.example to .env and fill them in.`);
+  process.exit(1);
+}
+
 (async () => {
   await connectDB();
 
