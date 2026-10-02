@@ -34,6 +34,7 @@ app.get('/health', (req, res) => {
 
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/gigs', require('./routes/gigRoutes'));
+app.use('/api/bookings', require('./routes/bookingRoutes'));
 
 // 404 handler — must come after all real routes, before the error handler
 app.use((req, res) => {
