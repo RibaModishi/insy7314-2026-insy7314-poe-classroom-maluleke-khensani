@@ -11,7 +11,30 @@ const app = express();
 
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 
-app.use(helmet());
+const HTTPS_ENABLED = process.env.USE_HTTPS === 'true';
+
+// This API only ever returns JSON, so its CSP denies every resource type instead of
+// Helmet's website-oriented defaults (which allow inline styles and https: fonts).
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'none'"],
+        // The three below don't fall back to default-src, so each is locked down explicitly.
+        baseUri: ["'none'"],
+        formAction: ["'none'"],
+        frameAncestors: ["'none'"],
+        ...(HTTPS_ENABLED ? { upgradeInsecureRequests: [] } : {})
+      }
+    },
+    // HSTS only means something over HTTPS; sending it on plain HTTP would be misleading.
+    strictTransportSecurity: HTTPS_ENABLED ? { maxAge: 31536000, includeSubDomains: true } : false,
+    // Matches frame-ancestors 'none' for older browsers that ignore CSP.
+    xFrameOptions: { action: 'deny' },
+    referrerPolicy: { policy: 'no-referrer' }
+  })
+);
 app.disable('x-powered-by');
 
 app.use(
