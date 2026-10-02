@@ -49,7 +49,9 @@ app.use(
 // Before body parsing, so a flood of requests is rejected without reading their bodies.
 app.use('/api', apiLimiter);
 
-app.use(express.json());
+// The largest legitimate body (a gig with a 1000-character description) is well under 10kb,
+// so anything bigger is refused before it can tie up the server.
+app.use(express.json({ limit: '10kb' }));
 
 app.get('/', (req, res) => {
   res.send('API is running');
