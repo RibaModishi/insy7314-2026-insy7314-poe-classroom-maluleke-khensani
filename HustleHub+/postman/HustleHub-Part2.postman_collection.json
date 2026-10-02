@@ -38,7 +38,7 @@
                   "pm.test('X-Content-Type-Options is nosniff', () => pm.expect(pm.response.headers.get('X-Content-Type-Options')).to.eql('nosniff'));",
                   "pm.test('X-Powered-By is hidden', () => pm.expect(pm.response.headers.has('X-Powered-By')).to.be.false);",
                   "",
-                  "const https = pm.collectionVariables.get('baseUrl').startsWith('https');",
+                  "const https = pm.variables.get('baseUrl').startsWith('https');",
                   "pm.test(https ? 'HSTS is sent over HTTPS' : 'HSTS is not sent over plain HTTP', () => {",
                   "  pm.expect(pm.response.headers.has('Strict-Transport-Security')).to.eql(https);",
                   "});"
