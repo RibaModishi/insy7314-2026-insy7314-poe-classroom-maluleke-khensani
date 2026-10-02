@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Gig = require('../models/Gig');
+const Booking = require('../models/Booking');
 
 const EDITABLE_FIELDS = ['title', 'description', 'price', 'category'];
 
@@ -78,6 +79,12 @@ const updateGig = async (req, res) => {
 const deleteGig = async (req, res) => {
   const gig = await findGigOrThrow(req.params.id);
   assertOwner(gig, req.user.id);
+
+  // Deleting a gig with open bookings would leave those bookings pointing at nothing.
+  const openBookings = await Booking.exists({ gig: gig._id, status: { $in: ['pending', 'confirmed'] } });
+  if (openBookings) {
+    throw new Error('Cannot delete a gig with pending or confirmed bookings');
+  }
 
   await gig.deleteOne();
 
