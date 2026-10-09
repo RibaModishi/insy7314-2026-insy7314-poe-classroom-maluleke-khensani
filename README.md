@@ -180,31 +180,6 @@ Category artwork mappings can be checked without a database using `npm run test:
 - Helmet applies a restrictive CSP to the JSON API, along with anti-framing, referrer, and content-type headers. Rate limits cover the API generally and apply stricter thresholds to login, registration, and booking.
 - Secrets and certificates are environment/local files and must not be committed. HTTPS certificates created by `npm run certs` are self-signed development certificates, not production certificates.
 
-## Part 2 rubric checklist
 
-This status is based on reviewing this source folder against the Part 2 rubric. **Implemented** means the feature/code is present; **Evidence still needed** means the required live test, recorded proof, or group submission item has not been verified here. It is not a predicted mark.
 
-| Rubric item | Weight | Review status | What remains |
-|---|---:|---|---|
-| Application functionality | 20 | Implemented in the app: auth, gig CRUD, browsing, booking, simulated payment/refund transactions, status changes, and income totals. | Run an end-to-end client/freelancer journey on a MongoDB replica set and capture proof. Transactions will fail on standalone local MongoDB. |
-| RBAC enforcement | 15 | Implemented: role middleware and ownership checks protect gigs, bookings, transactions, and income; an RBAC denial collection is included. | Run `npm run test:rbac` and retain the Newman report/screenshots. |
-| API security (JWT, validation, sanitisation) | 15 | JWT verification, database-derived roles, typed/trimmed/length-limited input validation, ID checks, safe errors, and editable-field whitelisting are implemented. | Review the marker's sanitisation expectation and show invalid-input denials in evidence. The API avoids rendering submitted text as HTML; no separate HTML-sanitiser package is used. |
-| Rate limiting | 10 | Implemented for general API traffic, failed login, registration, and bookings, with JSON 429 responses and retry information. | Run the full Newman collection (its final folder intentionally hits the general limit) and save results. |
-| Security headers (Helmet + CSP) | 10 | Helmet and a restrictive JSON API CSP are configured, including anti-framing and content-type protections. | Confirm response headers in Newman/Postman evidence. |
-| React frontend | 10 | React client is connected to the API, with role-aware navigation, forms, listing, booking, dashboard, and visible error messages. | Demonstrate the client and freelancer flows in the video. |
-| Backend testing (Postman + Newman) | 10 | Full-flow and RBAC denial collections plus Newman scripts are included. | Still needs successful execution and saved test output; collection presence alone is not test evidence. |
-| Frontend testing | 5 | Implemented and checked: 2 render/search interaction tests pass; production build succeeds. | Capture the passing terminal output for submission. |
-| README | 5 | Setup, architecture, roles, endpoints, RBAC, security, and test instructions are documented here. | Keep this file in the submitted GitHub repository. |
-| GitHub deduction criterion | Up to -5 | This folder currently has no project commits or configured remote. | Push to the group repository and ensure the team’s contribution/commit history is visible. The brief applies a deduction when GitHub is missing or collaboration evidence is limited. |
 
-### Submission evidence checklist
-
-- [x] Run the client tests (2 passed) and production build (succeeded); save/capture the terminal output for submission.
-- [ ] Run both Newman collections using the team database; save the reports/screenshots. Provide admin credentials only as local environment values if needed.
-- [ ] Record the required demo: registration/login, freelancer gig creation, client browsing and booking, transaction record, freelancer income, and a denied action.
-- [ ] Push this README and the completed project to the team's GitHub repository; check commit history and contributor evidence.
-- [ ] Capture application screenshots requested by the assignment.
-
-The brief places tax estimates, containers, CI/CD, monitoring/logging, and extended security work in Part 3; they are not Part 2 rubric rows.
-
-The assignment brief asks for tax estimates, containers, CI/CD, monitoring/logging, and additional security features in Part 3; those remain follow-on work rather than Part 2 completion items.
