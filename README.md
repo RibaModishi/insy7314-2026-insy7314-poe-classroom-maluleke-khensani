@@ -45,18 +45,8 @@ Payments are simulated. No card or bank details are collected. Tax estimates, Do
 
 ## Architecture
 
-```text
-Browser (React + Vite, port 5173)
-       │ JSON over HTTP/HTTPS, Bearer JWT
-       ▼
-Express API (port 4000)
-  ├── auth, gig, booking, transaction routes
-  ├── validation, JWT, RBAC, ownership and rate-limit middleware
-  └── Mongoose models
-       │
-       ▼
-MongoDB Atlas (persistent users, gigs, bookings and transactions)
-```
+<img width="1652" height="902" alt="image" src="https://github.com/user-attachments/assets/844dade8-7091-45a6-a94e-701697b79939" />
+
 
 ## Requirements
 
@@ -214,6 +204,72 @@ node test-models.js --cleanup
 Mongoose model validation checks can be run with `npm run test:models`; they create temporary test records unless run with `--cleanup`.
 
 Category artwork mappings can be checked without a database using `npm run test:artwork`.
+
+
+## Application Screenshots
+
+The screenshots below show the main HustleHub+ user flows for Part 2.
+
+###  Launch Page
+All type of users are able to see the launch page
+
+<img width="959" height="416" alt="image" src="https://github.com/user-attachments/assets/fe7c47be-ecd3-461f-97c5-a289d7ee468e" />
+
+
+### Login and registration
+
+Users can create an account or log in to access the application.
+
+**Registration page**
+
+<img width="959" height="413" alt="image" src="https://github.com/user-attachments/assets/eea30adf-8206-4626-86aa-6d96b4872cdf" />
+
+**Login Page**
+
+<img width="959" height="413" alt="image" src="https://github.com/user-attachments/assets/914bd38e-81ee-4a9f-9e20-3e01d66e230f" />
+
+
+### Freelancer dashboard
+
+Freelancers can view their listings and bookings, track income, and manage their gigs.
+
+<img width="959" height="415" alt="image" src="https://github.com/user-attachments/assets/997adf88-1c70-4fd4-acad-026874e9cdf4" />
+
+
+### Create and manage a gig
+
+Freelancers can create a gig with a title, description, price, and category, then view or update their own listings.
+
+<img width="896" height="401" alt="image" src="https://github.com/user-attachments/assets/c1a519df-1be4-4396-a0b3-e0f2773a9bf3" />
+
+
+### Browse available gigs
+
+Clients can browse available freelancer gigs and view details before booking.
+
+<img width="498" height="412" alt="image" src="https://github.com/user-attachments/assets/28a33749-3110-4b2a-95f6-3d04e1cf8a0d" />
+
+
+### Booking confirmation
+
+Clients can initiate a booking. Payments are simulated; no real payment details are collected.
+
+<img width="485" height="317" alt="image" src="https://github.com/user-attachments/assets/78d5d29a-7cab-4c36-8965-74e3f0bb8d30" />
+
+
+### Bookings and transactions
+
+Clients and freelancers can view their related bookings. Each booking creates an associated transaction record.
+
+<img width="482" height="301" alt="image" src="https://github.com/user-attachments/assets/9458f9c3-a80d-42fd-b771-731796c5fa56" />
+
+
+### Freelancer income
+
+Freelancers can review income recorded from bookings associated with their gigs.
+
+<img width="921" height="404" alt="image" src="https://github.com/user-attachments/assets/c8bc8e54-bfa3-424c-a0e0-0987d654a93c" />
+
 
 
 ## Security notes
