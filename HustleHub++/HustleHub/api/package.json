@@ -1,0 +1,36 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "certs": "node scripts/make-certs.js",
+    "seed": "node scripts/seed-demo.js",
+    "test": "newman run ../postman/HustleHub-Part2.postman_collection.json",
+    "test:rbac": "newman run ../postman/HustleHub-Part2-RBAC-denials.postman_collection.json",
+    "test:artwork": "node --test test-category-artwork.js",
+    "test:models": "node test-models.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.19.0"
+  },
+  "allowScripts": {
+    "bcrypt@6.0.0": true
+  },
+  "devDependencies": {
+    "newman": "^6.2.2",
+    "selfsigned": "^5.5.0"
+  }
+}
