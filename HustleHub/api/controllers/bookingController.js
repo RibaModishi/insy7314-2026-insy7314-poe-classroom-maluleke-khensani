@@ -4,6 +4,9 @@ const Gig = require('../models/Gig');
 const Transaction = require('../models/Transaction');
 const { assertOwnership, ownershipFilter } = require('../utils/ownership');
 
+const transactionsUnsupported = (err) =>
+  /transaction numbers are only allowed on a replica set member or mongos|transactions are not supported/i.test(err.message || '');
+
 // Who may move a booking between which states. Anything not listed is rejected.
 const ALLOWED_TRANSITIONS = {
   freelancer: {
@@ -35,20 +38,36 @@ const createBooking = async (req, res) => {
     throw new Error('You cannot book your own gig');
   }
 
-  // Booking and its payment are written in one database transaction, so a failure
-  // can never leave a booking without a payment record (or a payment without a booking).
+  // Use a database transaction when available. On standalone local MongoDB, create
+  // both records sequentially and remove the booking if its payment record fails.
   // Client comes from the token and amount/freelancer from the gig, never from the body.
-  const result = await mongoose.connection.transaction(async (session) => {
+  const createRecords = async (session) => {
+    const options = session ? { session } : undefined;
     const [booking] = await Booking.create(
       [{ gig: gig._id, client: req.user.id, freelancer: gig.freelancer, amount: gig.price }],
-      { session }
+      options
     );
-    const [transaction] = await Transaction.create(
-      [{ booking: booking._id, client: req.user.id, freelancer: gig.freelancer, amount: booking.amount }],
-      { session }
-    );
-    return { booking, transaction };
-  });
+    try {
+      const [transaction] = await Transaction.create(
+        [{ booking: booking._id, client: req.user.id, freelancer: gig.freelancer, amount: booking.amount }],
+        options
+      );
+      return { booking, transaction };
+    } catch (err) {
+      if (!session) await booking.deleteOne();
+      throw err;
+    }
+  };
+
+  let result;
+  try {
+    result = await mongoose.connection.transaction((session) => createRecords(session));
+  } catch (err) {
+    // Local MongoDB commonly runs as a standalone server. Keep booking + payment
+    // functional there, while using a real transaction whenever the DB supports it.
+    if (!transactionsUnsupported(err)) throw err;
+    result = await createRecords(null);
+  }
 
   res.status(201).json(result);
 };
@@ -89,19 +108,36 @@ const updateBookingStatus = async (req, res) => {
     throw new Error(`Cannot change booking from ${booking.status} to ${status}`);
   }
 
-  const result = await mongoose.connection.transaction(async (session) => {
+  const previousStatus = booking.status;
+  const updateRecords = async (session) => {
     booking.status = status;
-    await booking.save({ session });
+    await booking.save(session ? { session } : undefined);
 
     let refund = null;
     if (status === 'cancelled') {
-      [refund] = await Transaction.create(
-        [{ booking: booking._id, client: booking.client, freelancer: booking.freelancer, amount: booking.amount, type: 'refund' }],
-        { session }
-      );
+      try {
+        [refund] = await Transaction.create(
+          [{ booking: booking._id, client: booking.client, freelancer: booking.freelancer, amount: booking.amount, type: 'refund' }],
+          session ? { session } : undefined
+        );
+      } catch (err) {
+        if (!session) {
+          booking.status = previousStatus;
+          await booking.save();
+        }
+        throw err;
+      }
     }
     return { booking, refund };
-  });
+  };
+
+  let result;
+  try {
+    result = await mongoose.connection.transaction((session) => updateRecords(session));
+  } catch (err) {
+    if (!transactionsUnsupported(err)) throw err;
+    result = await updateRecords(null);
+  }
 
   res.status(200).json(result);
 };
