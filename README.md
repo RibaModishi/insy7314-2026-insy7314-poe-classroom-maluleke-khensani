@@ -1,6 +1,28 @@
 # HustleHub+
 
-HustleHub+ is a MERN freelance marketplace for clients and freelancers. Part 2 connects the React client to the Express API and MongoDB: users can register and sign in, freelancers publish gigs, clients browse and book gigs, and every booking creates a simulated payment transaction. Freelancers can review bookings and transaction-based income.
+HustleHub+ is a MERN freelance marketplace for clients and freelancers. Part 2 connects the React client to the Express API and MongoDB: users can register and sign in, freelancers publish gigs, clients book services, and payments are simulated.
+
+## Table of Contents
+
+- [Video Demo](#video-demo)
+- [Features](#features)
+- [How the marketplace works](#how-the-marketplace-works)
+- [Architecture](#architecture)
+- [Requirements](#requirements)
+- [Setup](#setup)
+  - [1. Configure and start the API](#1-configure-and-start-the-api)
+  - [2. Configure and start the React client](#2-configure-and-start-the-react-client)
+  - [3. Use the application](#3-use-the-application)
+- [API summary](#api-summary)
+  - [RBAC matrix](#rbac-matrix)
+- [Testing](#testing)
+  - [Frontend](#frontend)
+  - [Backend API with Postman and Newman](#backend-api-with-postman-and-newman)
+- [Part 2 test results](#part-2-test-results)
+  - [Frontend test results](#frontend-test-results)
+  - [RBAC, ownership, and validation collection](#rbac-ownership-and-validation-collection)
+  - [HustleHub+ API - Part 2 full flow](#hustlehub-api---part-2-full-flow)
+- [Security notes](#security-notes)
 
 ## Video Demo
 [Watch the HustleHub+ demonstration video]https://www.youtube.com/watch?v=lKeUEDBZFq4
@@ -56,7 +78,7 @@ npm install
 Copy-Item .env.example .env
 ```
 
-Set `MONGO_URI` to your database connection string and `JWT_SECRET` to a private random secret of at least 32 bytes. Keep `.env` private and out of Git. Set `CLIENT_ORIGIN=http://localhost:5173` for local development.
+Set `MONGO_URI` to your database connection string and `JWT_SECRET` to a private random secret of at least 32 bytes. Keep `.env` private and out of Git. Set `CLIENT_ORIGIN=http://localhost:5173` for the dev server.
 
 For local HTTPS (recommended for the Part 1 security requirement), create a development certificate and use it in `.env`:
 
@@ -64,7 +86,7 @@ For local HTTPS (recommended for the Part 1 security requirement), create a deve
 npm run certs
 ```
 
-Set `USE_HTTPS=true`, `SSL_KEY_PATH=./certs/key.pem`, and `SSL_CERT_PATH=./certs/cert.pem`. The self-signed certificate is for local development only; trust it in your browser/Postman before using the HTTPS API. Leave `USE_HTTPS=false` to run the API over HTTP during initial setup.
+Set `USE_HTTPS=true`, `SSL_KEY_PATH=./certs/key.pem`, and `SSL_CERT_PATH=./certs/cert.pem`. The self-signed certificate is for local development only; trust it in your browser/Postman before using the app.
 
 Start the API:
 
@@ -80,7 +102,7 @@ Optional: create sample users, gigs, bookings and transaction records for a walk
 npm run seed
 ```
 
-Seeded users use the password printed by the seed script. The default demo password is intended only for a local demo; set `SEED_DEMO_PASSWORD` in `.env` before seeding if you want a different password. Set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` to create a local admin account.
+Seeded users use the password printed by the seed script. The default demo password is intended only for a local demo; set `SEED_DEMO_PASSWORD` in `.env` before seeding if you want a different password.
 
 ### 2. Configure and start the React client
 
@@ -93,7 +115,7 @@ Copy-Item .env.example .env
 npm run dev
 ```
 
-The Vite client is at `http://localhost:5173`. `VITE_API_URL` defaults to `http://localhost:4000`; set it to `https://localhost:4000` if the API is running with HTTPS. Restart Vite after changing `.env`.
+The Vite client is at `http://localhost:5173`. `VITE_API_URL` defaults to `http://localhost:4000`; set it to `https://localhost:4000` if the API is running with HTTPS. Restart Vite after changing environment settings.
 
 ### 3. Use the application
 
@@ -119,7 +141,7 @@ The Vite client is at `http://localhost:5173`. `VITE_API_URL` defaults to `http:
 | `GET` | `/api/transactions` | Client or freelancer JWT | List the current user's transactions |
 | `GET` | `/api/transactions/income` | Freelancer JWT | Payment, refund, and net income totals |
 
-Protected requests use `Authorization: Bearer <token>`. The server obtains account roles and record ownership from MongoDB, not request fields. Self-registration accepts only `client` and `freelancer` roles.
+Protected requests use `Authorization: Bearer <token>`. The server obtains account roles and record ownership from MongoDB, not request fields. Self-registration accepts only `client` and `freelancer` roles. Admin account creation is seed-only, and the API denies tampering with role claims.
 
 ### RBAC matrix
 
@@ -136,7 +158,7 @@ Protected requests use `Authorization: Bearer <token>`. The server obtains accou
 | List transactions | Denied | Own transactions | Own transactions | Denied |
 | View income | Denied | Denied | Own income | Denied |
 
-The API does not expose an admin dashboard or user-management route in Part 2. A client or freelancer cannot read another account's bookings, transactions, or income. An admin may moderate gigs using the gig update/delete endpoints.
+The API does not expose an admin dashboard or user-management route in Part 2. A client or freelancer cannot read another account's bookings, transactions, or income. An admin may moderate gigs under the same ownership checks but does not receive a client or freelancer UI in this build.
 
 ## Testing
 
@@ -161,7 +183,7 @@ npm test
 npm run test:rbac
 ```
 
-The first collection covers successful and invalid auth, gigs, bookings, transactions, income, security headers, and rate limits. It deliberately exhausts the general API rate limit in its final folder; allow the 15-minute window to reset before running another full collection. The second collection exercises role, ownership, and validation denials. Supply admin credentials only as Newman environment variables when running the optional admin cases; never add real credentials to a collection file.
+The first collection covers successful and invalid auth, gigs, bookings, transactions, income, security headers, and rate limits. It deliberately exhausts the general API rate limit in its final request and checks the error response.
 
 Clean test accounts created by the collections with:
 
@@ -177,9 +199,8 @@ Category artwork mappings can be checked without a database using `npm run test:
 
 ## Frontend test results:
 
-Ran the frontend automated tests with Vitest. All three test files passed, with 14 tests passing and zero failures. They check gig artwork data, the GigArtwork component, and the Browse page
+Ran the frontend automated tests with Vitest. All three test files passed, with 14 tests passing and zero failures. They check gig artwork data, the GigArtwork component, and the Browse page.
 <img width="660" height="306" alt="image" src="https://github.com/user-attachments/assets/71a63bd6-d04a-4d1b-8b33-c5d2eb6b2c9e" />
-
 
 ## RBAC, ownership, and validation collection
 
@@ -190,19 +211,16 @@ Ran the frontend automated tests with Vitest. All three test files passed, with 
 - **Duration:** 8.414 seconds
 - **Evidence:** <img width="701" height="403" alt="image" src="https://github.com/user-attachments/assets/d700d36a-7966-4f66-a593-3b12cf1b104e" />
 
+This is a successful RBAC collection run in Postman.
 
-This is a successful RBAC collection run in Postman. 
+## HustleHub+ API - Part 2 full flow
 
-
-## HustleHub+ API - Part 2 full flow 
-
-- **Collection:** HustleHub+ API - Part 2 full flow 
+- **Collection:** HustleHub+ API - Part 2 full flow
 - **Runner:** Postman Collection Runner (not Newman)
 - **Result:** 175 passed, 0 failed, 0 skipped
 - **Evidence:** <img width="698" height="404" alt="image" src="https://github.com/user-attachments/assets/9d6f0e9c-a2d5-4f6c-afc8-348d366ab44a" />
 
-This is a successful RBAC collection run in Postman. 
-
+This is a successful RBAC collection run in Postman.
 
 ## Security notes
 
@@ -211,9 +229,5 @@ This is a successful RBAC collection run in Postman.
 - Validation accepts plain strings/numbers for relevant inputs, trims text, caps lengths, checks ObjectId values, and whitelists editable gig fields. The API does not render user text as HTML.
 - `verifyToken`, database-backed role checks, and reusable ownership rules protect sensitive actions and records.
 - Booking/payment creation and cancellation/refund creation use database transactions so related records stay consistent.
-- Helmet applies a restrictive CSP to the JSON API, along with anti-framing, referrer, and content-type headers. Rate limits cover the API generally and apply stricter thresholds to login, registration, and booking.
+- Helmet applies a restrictive CSP to the JSON API, along with anti-framing, referrer, and content-type headers. Rate limits cover the API generally and apply stricter thresholds to login, registration, and booking endpoints.
 - Secrets and certificates are environment/local files and must not be committed. HTTPS certificates created by `npm run certs` are self-signed development certificates, not production certificates.
-
-
-
-
