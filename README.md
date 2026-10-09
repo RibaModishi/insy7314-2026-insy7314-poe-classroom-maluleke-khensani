@@ -3,7 +3,7 @@
 HustleHub+ is a MERN freelance marketplace for clients and freelancers. Part 2 connects the React client to the Express API and MongoDB: users can register and sign in, freelancers publish gigs, clients browse and book gigs, and every booking creates a simulated payment transaction. Freelancers can review bookings and transaction-based income.
 
 ## Video Demo
-[Watch the HustleHub+ demonstration video](paste-your-video-link-here)
+[Watch the HustleHub+ demonstration video]https://www.youtube.com/watch?v=lKeUEDBZFq4
 
 ## Features
 
