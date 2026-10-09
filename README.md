@@ -2,6 +2,9 @@
 
 HustleHub+ is a MERN freelance marketplace for clients and freelancers. Part 2 connects the React client to the Express API and MongoDB: users can register and sign in, freelancers publish gigs, clients browse and book gigs, and every booking creates a simulated payment transaction. Freelancers can review bookings and transaction-based income.
 
+## Video Demo
+[Watch the HustleHub+ demonstration video](paste-your-video-link-here)
+
 ## Features
 
 - Registration and login with bcrypt password hashing and JWT authentication.
@@ -169,6 +172,37 @@ node test-models.js --cleanup
 Mongoose model validation checks can be run with `npm run test:models`; they create temporary test records unless run with `--cleanup`.
 
 Category artwork mappings can be checked without a database using `npm run test:artwork`.
+
+# Part 2 test results
+
+## Frontend test results:
+
+Ran the frontend automated tests with Vitest. All three test files passed, with 14 tests passing and zero failures. They check gig artwork data, the GigArtwork component, and the Browse page
+<img width="660" height="306" alt="image" src="https://github.com/user-attachments/assets/71a63bd6-d04a-4d1b-8b33-c5d2eb6b2c9e" />
+
+
+## RBAC, ownership, and validation collection
+
+- **Collection:** HustleHub+ API - Part 2 RBAC, ownership and validation denials
+- **Runner:** Postman Collection Runner (not Newman)
+- **Result:** 274 passed, 0 failed, 0 skipped
+- **Iterations:** 1
+- **Duration:** 8.414 seconds
+- **Evidence:** <img width="701" height="403" alt="image" src="https://github.com/user-attachments/assets/d700d36a-7966-4f66-a593-3b12cf1b104e" />
+
+
+This is a successful RBAC collection run in Postman. 
+
+
+## HustleHub+ API - Part 2 full flow 
+
+- **Collection:** HustleHub+ API - Part 2 full flow 
+- **Runner:** Postman Collection Runner (not Newman)
+- **Result:** 175 passed, 0 failed, 0 skipped
+- **Evidence:** <img width="698" height="404" alt="image" src="https://github.com/user-attachments/assets/9d6f0e9c-a2d5-4f6c-afc8-348d366ab44a" />
+
+This is a successful RBAC collection run in Postman. 
+
 
 ## Security notes
 
