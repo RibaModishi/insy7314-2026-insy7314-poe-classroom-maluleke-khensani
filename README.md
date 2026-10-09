@@ -1,6 +1,6 @@
 # HustleHub+
 
-HustleHub+ is a MERN freelance marketplace for clients and freelancers. Part 2 connects the React client to the Express API and MongoDB: users can register and sign in, freelancers publish gigs, clients book services, and payments are simulated.
+HustleHub+ is a MERN freelance marketplace for clients and freelancers. Part 2 connects the React client to the Express API and MongoDB: users can register and sign in, freelancers publish gigs, clients book them, and income is tracked.
 
 ## Table of Contents
 
@@ -13,6 +13,7 @@ HustleHub+ is a MERN freelance marketplace for clients and freelancers. Part 2 c
   - [1. Configure and start the API](#1-configure-and-start-the-api)
   - [2. Configure and start the React client](#2-configure-and-start-the-react-client)
   - [3. Use the application](#3-use-the-application)
+- [Application Screenshots](#application-screenshots)
 - [API summary](#api-summary)
   - [RBAC matrix](#rbac-matrix)
 - [Testing](#testing)
@@ -21,7 +22,7 @@ HustleHub+ is a MERN freelance marketplace for clients and freelancers. Part 2 c
 - [Security notes](#security-notes)
 
 ## Video Demo
-[Watch the HustleHub+ demonstration video]https://www.youtube.com/watch?v=lKeUEDBZFq4
+[Watch the HustleHub+ demonstration video](https://www.youtube.com/watch?v=lKeUEDBZFq4)
 
 ## Features
 
@@ -64,7 +65,7 @@ npm install
 Copy-Item .env.example .env
 ```
 
-Set `MONGO_URI` to your database connection string and `JWT_SECRET` to a private random secret of at least 32 bytes. Keep `.env` private and out of Git. Set `CLIENT_ORIGIN=http://localhost:5173` for the dev server.
+Set `MONGO_URI` to your database connection string and `JWT_SECRET` to a private random secret of at least 32 bytes. Keep `.env` private and out of Git. Set `CLIENT_ORIGIN=http://localhost:5173` for local development.
 
 For local HTTPS (recommended for the Part 1 security requirement), create a development certificate and use it in `.env`:
 
@@ -72,7 +73,7 @@ For local HTTPS (recommended for the Part 1 security requirement), create a deve
 npm run certs
 ```
 
-Set `USE_HTTPS=true`, `SSL_KEY_PATH=./certs/key.pem`, and `SSL_CERT_PATH=./certs/cert.pem`. The self-signed certificate is for local development only; trust it in your browser/Postman before using the app.
+Set `USE_HTTPS=true`, `SSL_KEY_PATH=./certs/key.pem`, and `SSL_CERT_PATH=./certs/cert.pem`. The self-signed certificate is for local development only; trust it in your browser/Postman before using the API.
 
 Start the API:
 
@@ -101,7 +102,7 @@ Copy-Item .env.example .env
 npm run dev
 ```
 
-The Vite client is at `http://localhost:5173`. `VITE_API_URL` defaults to `http://localhost:4000`; set it to `https://localhost:4000` if the API is running with HTTPS. Restart Vite after changing environment settings.
+The Vite client is at `http://localhost:5173`. `VITE_API_URL` defaults to `http://localhost:4000`; set it to `https://localhost:4000` if the API is running with HTTPS. Restart Vite after changing environment variables.
 
 ### 3. Use the application
 
@@ -109,102 +110,6 @@ The Vite client is at `http://localhost:5173`. `VITE_API_URL` defaults to `http:
 2. As a freelancer, publish a gig and open the dashboard to see gigs, bookings, and income.
 3. As a client, browse gigs, open a listing, confirm the simulated booking, and view the booking and payment transaction under **My Bookings**.
 4. A freelancer can confirm or complete their own bookings. A client or freelancer can cancel an eligible booking; cancellation adds a refund transaction.
-
-## API summary
-
-| Method | Endpoint | Access | Purpose |
-|---|---|---|---|
-| `POST` | `/api/auth/register` | Public | Register a client or freelancer |
-| `POST` | `/api/auth/login` | Public | Sign in and receive a JWT |
-| `GET` | `/api/auth/me` | JWT | Current account profile |
-| `GET` | `/api/gigs` | Public | Browse listings |
-| `GET` | `/api/gigs/:id` | Public | View one listing |
-| `POST` | `/api/gigs` | Freelancer JWT | Create a listing |
-| `PUT` / `DELETE` | `/api/gigs/:id` | Owner freelancer JWT (admin may moderate) | Update or delete a listing |
-| `POST` | `/api/bookings` | Client JWT | Book a gig; creates a payment transaction |
-| `GET` | `/api/bookings` | Client or freelancer JWT | List bookings involving the current user |
-| `PUT` | `/api/bookings/:id/status` | Client or freelancer JWT | Change status when permitted by the booking workflow |
-| `GET` | `/api/transactions` | Client or freelancer JWT | List the current user's transactions |
-| `GET` | `/api/transactions/income` | Freelancer JWT | Payment, refund, and net income totals |
-
-Protected requests use `Authorization: Bearer <token>`. The server obtains account roles and record ownership from MongoDB, not request fields. Self-registration accepts only `client` and `freelancer` roles. Admin account creation is seed-only, and the API denies tampering with role claims.
-
-### RBAC matrix
-
-| Endpoint/action | Guest | Client | Freelancer | Admin |
-|---|---|---|---|---|
-| Register / sign in | Allowed | Allowed | Allowed | Sign in only; admin is seeded |
-| View profile | Denied | Own profile | Own profile | Own profile |
-| Browse/view gigs | Allowed | Allowed | Allowed | Allowed |
-| Create gig | Denied | Denied | Allowed | Denied |
-| Update/delete gig | Denied | Denied | Own gigs only | Any gig for moderation |
-| Create booking | Denied | Allowed | Denied | Denied |
-| List bookings | Denied | Own client bookings | Bookings on own gigs | Denied |
-| Change booking status | Denied | Own booking, permitted transitions | Booking on own gig, permitted transitions | Denied |
-| List transactions | Denied | Own transactions | Own transactions | Denied |
-| View income | Denied | Denied | Own income | Denied |
-
-
-## Testing
-
-### Frontend
-
-```powershell
-cd client
-npm test
-npm run build
-```
-
-The Vitest suite checks that marketplace listings render and that search filters listings.
-
-Category artwork mapping and image-load fallbacks are covered by `gigArtwork.test.js` and `GigArtwork.test.jsx`.
-
-#### Image example of Newman test running:
-Ran the frontend automated tests with Vitest. All three test files passed, with 14 tests passing and zero failures. They check gig artwork data, the GigArtwork component, and the Browse page.
-
-<img width="660" height="306" alt="image" src="https://github.com/user-attachments/assets/71a63bd6-d04a-4d1b-8b33-c5d2eb6b2c9e" />
-
-
-### Backend API with Postman and Newman
-
-Start the API and configure its database first. From `api/`:
-
-```powershell
-npm test
-npm run test:rbac
-```
-
-The first collection covers successful and invalid auth, gigs, bookings, transactions, income, security headers, and rate limits. It deliberately exhausts the general API rate limit in its final request and checks the error response.
-
-#### First Postman collection: RBAC, ownership, and validation collection
-
-- **Collection:** HustleHub+ API - Part 2 RBAC, ownership and validation denials
-- **Runner:** Postman Collection Runner (not Newman)
-- **Result:** 274 passed, 0 failed, 0 skipped
-- **Iterations:** 1
-- **Duration:** 8.414 seconds
-- **Evidence:** <img width="701" height="403" alt="image" src="https://github.com/user-attachments/assets/d700d36a-7966-4f66-a593-3b12cf1b104e" />
-
-
-#### Second Postman collection HustleHub+ API - Part 2 full flow
-
-- **Collection:** HustleHub+ API - Part 2 full flow
-- **Runner:** Postman Collection Runner (not Newman)
-- **Result:** 175 passed, 0 failed, 0 skipped
-- **Evidence:** <img width="698" height="404" alt="image" src="https://github.com/user-attachments/assets/9d6f0e9c-a2d5-4f6c-afc8-348d366ab44a" />
-
-This is a successful Part 2 full flow collection run in Postman.
-
-Clean test accounts created by the collections with:
-
-```powershell
-node test-models.js --cleanup
-```
-
-Mongoose model validation checks can be run with `npm run test:models`; they create temporary test records unless run with `--cleanup`.
-
-Category artwork mappings can be checked without a database using `npm run test:artwork`.
-
 
 ## Application Screenshots
 
@@ -270,6 +175,101 @@ Freelancers can review income recorded from bookings associated with their gigs.
 
 <img width="921" height="404" alt="image" src="https://github.com/user-attachments/assets/c8bc8e54-bfa3-424c-a0e0-0987d654a93c" />
 
+
+## API summary
+
+| Method | Endpoint | Access | Purpose |
+|---|---|---|---|
+| `POST` | `/api/auth/register` | Public | Register a client or freelancer |
+| `POST` | `/api/auth/login` | Public | Sign in and receive a JWT |
+| `GET` | `/api/auth/me` | JWT | Current account profile |
+| `GET` | `/api/gigs` | Public | Browse listings |
+| `GET` | `/api/gigs/:id` | Public | View one listing |
+| `POST` | `/api/gigs` | Freelancer JWT | Create a listing |
+| `PUT` / `DELETE` | `/api/gigs/:id` | Owner freelancer JWT (admin may moderate) | Update or delete a listing |
+| `POST` | `/api/bookings` | Client JWT | Book a gig; creates a payment transaction |
+| `GET` | `/api/bookings` | Client or freelancer JWT | List bookings involving the current user |
+| `PUT` | `/api/bookings/:id/status` | Client or freelancer JWT | Change status when permitted by the booking workflow |
+| `GET` | `/api/transactions` | Client or freelancer JWT | List the current user's transactions |
+| `GET` | `/api/transactions/income` | Freelancer JWT | Payment, refund, and net income totals |
+
+Protected requests use `Authorization: Bearer <token>`. The server obtains account roles and record ownership from MongoDB, not request fields. Self-registration accepts only `client` and `freelancer` roles.
+
+### RBAC matrix
+
+| Endpoint/action | Guest | Client | Freelancer | Admin |
+|---|---|---|---|---|
+| Register / sign in | Allowed | Allowed | Allowed | Sign in only; admin is seeded |
+| View profile | Denied | Own profile | Own profile | Own profile |
+| Browse/view gigs | Allowed | Allowed | Allowed | Allowed |
+| Create gig | Denied | Denied | Allowed | Denied |
+| Update/delete gig | Denied | Denied | Own gigs only | Any gig for moderation |
+| Create booking | Denied | Allowed | Denied | Denied |
+| List bookings | Denied | Own client bookings | Bookings on own gigs | Denied |
+| Change booking status | Denied | Own booking, permitted transitions | Booking on own gig, permitted transitions | Denied |
+| List transactions | Denied | Own transactions | Own transactions | Denied |
+| View income | Denied | Denied | Own income | Denied |
+
+
+## Testing
+
+### Frontend
+
+```powershell
+cd client
+npm test
+npm run build
+```
+
+The Vitest suite checks that marketplace listings render and that search filters listings.
+
+Category artwork mapping and image-load fallbacks are covered by `gigArtwork.test.js` and `GigArtwork.test.jsx`.
+
+#### Image example of Newman test running:
+Ran the frontend automated tests with Vitest. All three test files passed, with 14 tests passing and zero failures. They check gig artwork data, the GigArtwork component, and the Browse page.
+
+<img width="660" height="306" alt="image" src="https://github.com/user-attachments/assets/71a63bd6-d04a-4d1b-8b33-c5d2eb6b2c9e" />
+
+
+### Backend API with Postman and Newman
+
+Start the API and configure its database first. From `api/`:
+
+```powershell
+npm test
+npm run test:rbac
+```
+
+The first collection covers successful and invalid auth, gigs, bookings, transactions, income, security headers, and rate limits. It deliberately exhausts the general API rate limit in its final request to verify rate-limiting protection.
+
+#### First Postman collection: RBAC, ownership, and validation collection
+
+- **Collection:** HustleHub+ API - Part 2 RBAC, ownership and validation denials
+- **Runner:** Postman Collection Runner (not Newman)
+- **Result:** 274 passed, 0 failed, 0 skipped
+- **Iterations:** 1
+- **Duration:** 8.414 seconds
+- **Evidence:** <img width="701" height="403" alt="image" src="https://github.com/user-attachments/assets/d700d36a-7966-4f66-a593-3b12cf1b104e" />
+
+
+#### Second Postman collection HustleHub+ API - Part 2 full flow
+
+- **Collection:** HustleHub+ API - Part 2 full flow
+- **Runner:** Postman Collection Runner (not Newman)
+- **Result:** 175 passed, 0 failed, 0 skipped
+- **Evidence:** <img width="698" height="404" alt="image" src="https://github.com/user-attachments/assets/9d6f0e9c-a2d5-4f6c-afc8-348d366ab44a" />
+
+This is a successful Part 2 full flow collection run in Postman.
+
+Clean test accounts created by the collections with:
+
+```powershell
+node test-models.js --cleanup
+```
+
+Mongoose model validation checks can be run with `npm run test:models`; they create temporary test records unless run with `--cleanup`.
+
+Category artwork mappings can be checked without a database using `npm run test:artwork`.
 
 
 ## Security notes
